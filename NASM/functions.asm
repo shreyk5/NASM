@@ -225,7 +225,91 @@ print_array:
            end_print: 
 	   popa
      ret
-	           
+
+;------------------------------
+; MULTIDIMENSIONAL ARRAY INDEX
+;------------------------------
+
+get_idx:
+         ;address of a[i][j]=base address+w*(n*i+j)
+	 ;edx=badd , ebx=i, ecx=j , eax=columns
+         push ebx
+	 push ecx
+	 push edx
+
+	 imul eax,ebx      ; eax=n*i
+	 add eax,ecx  ; eax=n*i+j:
+         shl eax,2   
+	 add eax,edx
+	
+         pop edx
+	 pop ecx
+	 pop ebx
+   ret
+
+get_idx1:
+          push ebx
+	  push ecx
+	  push edx
+
+	  imul eax,ecx
+	  add eax,ebx
+          shl eax,2
+	  add eax,edx
+
+	  pop edx
+	  pop ecx
+	  pop ebx
+ ret	  
+
+;--------------------------
+; ESI base address
+;--------------------------
+
+print_mat:
+           pusha
+           
+	   ;ebx has number of rows
+	   ; ecx number of columns
+           mov [row],ebx
+	   mov [col],ecx
+
+     mov ebx,0
+     forr:
+          cmp ebx,[row]
+	  je endr
+
+	  mov ecx,0
+	  forc:
+	       cmp ecx,[col]
+	       je endc
+	       
+	       mov eax,[col]
+	       mov edx,esi
+
+	       call get_idx
+	       mov edx,eax
+	       mov eax,dword[edx]
+	       call printi
+
+	       inc ecx
+	       jmp forc
+
+	    endc:
+	          mov eax,10
+		  push eax
+		  mov eax,esp
+		  call sprint
+		  pop eax
+	          
+		  inc ebx
+		  jmp forr
+		  
+   endr:
+
+	   popa
+  ret
+
 
 section .data
 space : db ' ',0h
@@ -236,5 +320,5 @@ n    : resb 10
 len  : resb 2 
 num  : resb 10
 len1 : resb 2
-
-
+row  : resb 10
+col  : resb 10
